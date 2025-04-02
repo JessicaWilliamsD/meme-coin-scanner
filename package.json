@@ -1,0 +1,27 @@
+{
+  "name": "meme-coin-scanner",
+  "version": "0.1.0",
+  "description": "A tool to scan and analyze new meme coins on DEX platforms",
+  "main": "dist/index.js",
+  "scripts": {
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts",
+    "build": "tsc",
+    "test": "jest"
+  },
+  "keywords": ["crypto", "meme-coin", "scanner", "defi", "web3"],
+  "author": "JessicaWilliamsD",
+  "license": "MIT",
+  "dependencies": {
+    "web3": "^4.3.0",
+    "axios": "^1.6.0",
+    "dotenv": "^16.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "typescript": "^5.3.0",
+    "ts-node": "^10.9.0",
+    "jest": "^29.7.0",
+    "@types/jest": "^29.5.0"
+  }
+}
