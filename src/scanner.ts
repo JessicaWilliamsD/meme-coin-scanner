@@ -1,8 +1,14 @@
 import { Token, TokenAnalysis, ScanResult, RiskLevel } from './types';
 import { config } from './config';
+import { Web3Provider } from './web3Provider';
 
 export class TokenScanner {
     private isScanning = false;
+    private web3Provider: Web3Provider;
+
+    constructor() {
+        this.web3Provider = new Web3Provider();
+    }
 
     async scanNewTokens(): Promise<ScanResult> {
         if (this.isScanning) {
@@ -17,7 +23,11 @@ export class TokenScanner {
         try {
             console.log('Starting token scan...');
             
-            // TODO: Implement actual scanning logic
+            const latestBlock = await this.web3Provider.getLatestBlockNumber();
+            console.log(`Latest block: ${latestBlock}`);
+            
+            // TODO: Scan recent blocks for new token deployments
+            // TODO: Filter tokens based on criteria
             // For now just return empty results
             
         } catch (error) {
