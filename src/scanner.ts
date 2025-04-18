@@ -1,13 +1,19 @@
 import { Token, TokenAnalysis, ScanResult, RiskLevel } from './types';
 import { config } from './config';
 import { Web3Provider } from './web3Provider';
+import { DexAnalyzer } from './dexAnalyzer';
+import { RiskAssessment } from './riskAssessment';
 
 export class TokenScanner {
     private isScanning = false;
     private web3Provider: Web3Provider;
+    private dexAnalyzer: DexAnalyzer;
+    private riskAssessment: RiskAssessment;
 
     constructor() {
         this.web3Provider = new Web3Provider();
+        this.dexAnalyzer = new DexAnalyzer(this.web3Provider);
+        this.riskAssessment = new RiskAssessment(this.web3Provider);
     }
 
     async scanNewTokens(): Promise<ScanResult> {
@@ -44,19 +50,48 @@ export class TokenScanner {
     }
 
     private async analyzeToken(token: Token): Promise<TokenAnalysis> {
-        // TODO: Implement token analysis
-        return {
-            token,
-            liquidity: {
+        try {
+            // Get liquidity information
+            const liquidity = await this.dexAnalyzer.findBestLiquidity(token.address);
+            const defaultLiquidity = {
                 usdValue: 0,
                 tokenAmount: '0',
                 pairAddress: '',
                 dexName: 'unknown'
-            },
-            holderCount: 0,
-            topHoldersPercentage: 0,
-            rugPullRisk: RiskLevel.HIGH
-        };
+            };
+
+            // Get holder information  
+            const holderInfo = await this.riskAssessment.getHolderConcentration(token.address);
+
+            // Assess risk
+            const rugPullRisk = await this.riskAssessment.assessRugPullRisk(
+                token, 
+                liquidity || defaultLiquidity
+            );
+
+            return {
+                token,
+                liquidity: liquidity || defaultLiquidity,
+                holderCount: holderInfo.count,
+                topHoldersPercentage: holderInfo.topHoldersPercentage,
+                rugPullRisk
+            };
+        } catch (error) {
+            console.error(`Error analyzing token ${token.address}:`, error);
+            
+            return {
+                token,
+                liquidity: {
+                    usdValue: 0,
+                    tokenAmount: '0',
+                    pairAddress: '',
+                    dexName: 'unknown'
+                },
+                holderCount: 0,
+                topHoldersPercentage: 100,
+                rugPullRisk: RiskLevel.CRITICAL
+            };
+        }
     }
 
     isCurrentlyScanning(): boolean {
